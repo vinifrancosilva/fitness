@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <section class="flex items-center justify-center min-h-screen min-w-screen mx-auto bg-gray-500">
+    <div class="relative flex-col justify-between p-4 bg-gray-200 shadow-md rounded">
+    
+      <div class="flex flex-1 items-center justify-around text-3xl font-extrabold text-azul mb-4">                  
+          <h2>Cálculos</h2>
+      </div>
+      
+      <form id="form_planilha" action="calculo" class="flex flex-col justify-center" >
+          <label for="senha" class="text-md font-medium">Senha</label>
+          <input 
+            class="w-full px-2 py-1.5 mb-8 border border-gray-300 rounded
+              text-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-laranja
+              focus:ring-1 focus:ring-laranja focus:invalid:border-red-300 focus:invalid:ring-red-300" 
+            type="password" 
+            id="senha"
+            placeholder="********" 
+            required
+          >
+          <div class="form-control w-full max-w-xs">
+            <label class="label">
+              <span class="label-text">Escolhe a planilha, animal!</span>              
+            </label>
+            <input
+              type="file"
+              id="file"
+              class="
+                text-sm text-grey-500
+                file:mr-5 file:py-3 file:px-10
+                file:rounded-md file:border-0
+                file:text-md file:font-semibold  file:text-white
+                file:bg-gray-500
+                hover:file:cursor-pointer hover:file:opacity-80
+              "              
+              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            />
+          </div>          
+          
+          <input
+            type="submit"
+            id="botao_submit"
+            class="
+              px-4 py-1.5 mt-4 rounded-md shadow-lg bg-gray-500 font-medium text-white block 
+              hover:enabled:opacity-80 hover:enabled:text-white transition duration-300
+              disabled:opacity-50
+            "
+            disabled="true"
+            value="Envia"
+          />
+      </form>    
+    </div>  
+  </section>
+  <script>
+    const btn = document.querySelector("#botao_submit");
+    btn.disabled = true;    
+    const file = document.querySelector("#file");
+    const senha = document.querySelector("#senha");
+
+    function habilita_submit() {
+      if (file.value !== "" && (senha.value !== "" && senha.value.length === 8)) {        
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function limpa_file() {
+      file.value = "";
+    }
+
+    file.addEventListener("input", habilita_submit);
+    senha.addEventListener("input", habilita_submit);
+  </script>
+</body>
+</html>

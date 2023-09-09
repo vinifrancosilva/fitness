@@ -1,0 +1,38 @@
+SQL_DDL_CALCULO = """
+  CREATE TABLE peso (
+    TIMESTAMP DATETIME NOT NULL,
+    NU_PESO_G INTEGER NOT NULL
+  );
+"""
+SQL_CALCULO = """
+  WITH CTE_WN AS (
+    SELECT 
+      TIMESTAMP,
+      NU_PESO_G,
+      strftime('%W', datetime(TIMESTAMP)) AS WN
+    FROM peso
+  ),
+  CTE_MEDIA AS (
+    SELECT 
+      WN,
+      AVG(NU_PESO_G) AS MEDIA
+    FROM CTE_WN
+    GROUP BY WN
+  ),
+  CTE_MAX_MIN AS (
+      SELECT DISTINCT 
+          WN,
+          MIN(TIMESTAMP) OVER (PARTITION BY WN) AS DE,
+          MAX(TIMESTAMP) OVER (PARTITION BY WN) AS ATÉ
+      FROM CTE_WN
+  )
+  SELECT
+      DATE(M.DE) AS DE,
+      DATE(M.ATÉ) AS ATÉ,
+      MEDIA.WN AS SEMANA,
+      MEDIA.MEDIA AS [MÉDIA(gramas)],
+      MEDIA.MEDIA/1000 AS [MÉDIA(Kg)]
+  FROM CTE_MEDIA AS MEDIA
+  LEFT JOIN CTE_MAX_MIN AS M ON M.WN = MEDIA.WN
+  
+"""

@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <section class="flex items-center justify-center min-h-screen min-w-screen bg-gray-500">
+    <div class="flex-col space-y-2">
+      
+      {% if erro %}
+        <div class="bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md" role="alert">
+          <div class="flex">
+            <div class="py-1"><svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>     
+            <div>
+              <p class="font-bold">{{ erro['principal'] }}</p>
+              <p class="text-sm">{{ erro['excecao'] }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <div class="relative flex-col justify-between p-4 bg-gray-200 shadow-md rounded">
+      
+        <div class="flex flex-1 items-center justify-around text-3xl font-extrabold text-azul mb-4">                  
+            <h2 onclick="limpa_file()">Upload da planilha</h2>
+        </div>
+        
+        <form 
+          id="form_planilha" 
+          action="/calculo" 
+          method="POST" 
+          enctype="multipart/form-data"
+          class="flex flex-col justify-center" 
+        >
+            <label for="senha" class="text-md font-medium">Senha</label>
+            <input 
+              class="px-2 py-2 mb-4 border border-gray-300 rounded
+                text-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-laranja
+                focus:ring-1 focus:ring-laranja focus:invalid:border-red-300 focus:invalid:ring-red-300" 
+              type="password" 
+              id="senha"
+              name="senha"
+              placeholder="********" 
+              required
+            >
+            <!-- <div class="max-w-xs"> -->
+              <!-- <label class="block label">
+                <span class="label-text">Escolhe a planilha, animal!</span> -->
+            <input
+              type="file"
+              id="file"
+              name="planilha"
+              class="block
+                text-sm text-grey-500
+                file:mr-2 file:py-3 file:px-6
+                file:rounded-md file:border-0
+                file:text-md file:font-semibold  file:text-white
+                file:bg-gray-500
+                hover:file:cursor-pointer hover:file:opacity-80
+              "
+              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            />  
+              <!-- </label> -->
+              
+            <!-- </div>           -->
+            
+            <input
+              type="submit"
+              id="botao_submit"
+              class="
+                px-4 py-1.5 mt-4 rounded-md shadow-lg bg-gray-500 font-medium text-white block 
+                hover:enabled:opacity-80 hover:enabled:text-white transition duration-300
+                disabled:opacity-50
+              "
+              disabled="true"
+              value="Envia"
+            />
+        </form>    
+      </div>  
+    </div>  
+  </section>
+  <script>
+    const btn = document.querySelector("#botao_submit");
+    btn.disabled = true;    
+    const file = document.querySelector("#file");
+    const senha = document.querySelector("#senha");
+
+    function habilita_submit() {
+      if (file.value !== "" && (senha.value !== "" && senha.value.length === 8)) {        
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function limpa_file() {
+      file.value = "";
+    }
+
+    file.addEventListener("input", habilita_submit);
+    senha.addEventListener("input", habilita_submit);
+  </script>
+</body>
+</html>

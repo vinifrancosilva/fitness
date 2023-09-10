@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 
-from modelos import Usuario
+from modelos import Usuario, Registro
 import sql
 
 # cria um path
@@ -25,36 +25,47 @@ def verifica_senha(senha: str) -> Usuario:
   )
 
 def executa_ddl():
-  sql = """
-    CREATE TABLE IF NOT EXISTS usuario (
-      ID INTEGER PRIMARY KEY AUTOINCREMENT,
-      NOME TEXT NOT NULL,
-      SENHA TEXT NOT NULL
-    );
-  """
   try: 
-    conn.execute(sql)
+    conn.executescript(sql.DDL)
     conn.commit()
   except Exception as e:
      print("Não foi possível executar o DDL no sqlite: ", e)
      sys.exit(1)
 
+def insere_registro(data_hora, peso, usuario) -> Registro:
+  # VERIFICA SE EXISTE REGISTRO PARA AQUELE DIA
+  cursor = conn.cursor()
+  res = cursor.execute(sql.SELECIONA_REGISTRO_DATA_USUARIO_ID, (data_hora.date(), usuario.id))
+  row = res.fetchone()
+
+  # SE JÁ TEM REGISTRO PARA A DATA, FAZ O UPDATE
+  if row is not None:
+    cursor.execute(
+      sql.ATUALIZA_REGISTRO_DATA_USUARIO_ID, 
+      (data_hora, peso, data_hora.date(), usuario.id,)
+    )
+    id = row[0]
+  else:
+    # SE NÃO TEM, INSERE
+    cursor.execute(sql.INSERE_REGISTRO, (usuario.id, data_hora, peso, ))
+    id = cursor.lastrowid
+
+  # COMMITA A TRANSAÇÃO
+  conn.commit()
+
+  # CRIA E RETORNA UM PYDANTIC PARA O REGISTRO RETORNADO
+  res = cursor.execute(sql.SELECIONA_REGISTRO_ID, (id, ))
+  row = res.fetchone()
+  
+  return Registro(
+    id = row[0],
+    usuario_id = row[1],
+    data_hora=row[2],
+    peso=row[3],
+  )
+
 def faz_calculos(df: pd.DataFrame) -> pd.DataFrame:
-  print(df.info())
-  conn_mem = sqlite3.connect(":memory:")
-  conn_mem.execute(sql.SQL_DDL_CALCULO)
-  conn_mem.commit()
-
-  with conn_mem:
-    for _, row in df.iterrows():
-      conn_mem.execute(
-        "INSERT INTO peso (TIMESTAMP, NU_PESO_G) VALUES(?, ?)", 
-        (str(row["TIMESTAMP"]), row["NU_PESO_G"],)
-      )
-
-  df_calculo = pd.read_sql_query(sql.SQL_CALCULO,conn_mem)
-
-  conn_mem.close()
+  df_calculo = pd.read_sql_query(sql.CALCULO, conn)
 
   return df_calculo
 

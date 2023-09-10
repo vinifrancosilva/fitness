@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Form, File, UploadFile
 from fastapi.responses import HTMLResponse
+from fastapi.exceptions import RequestValidationError
+
 from typing import Annotated
 import uvicorn
 import sys
@@ -9,7 +11,7 @@ from pathlib import Path
 from datetime import datetime
 import sqlite3
 
-from modelos import Usuario
+from modelos import Usuario, Registro
 import db_sync
 
 # SETUP DO JINJA2
@@ -27,9 +29,38 @@ BASE_DIR = Path(__file__).resolve().parent
 # INSTANCIA A FASTAPI
 app = FastAPI()
 
+@app.exception_handler(RequestValidationError)
+def trata_erro_validacao(request, exc):
+    return HTMLResponse(index_template.render(erro={
+      "principal": "Erro de validação.",
+      "excecao": str(exc.errors())
+    }))
+
 @app.get("/")
 def index():
   return HTMLResponse(index_template.render())
+
+@app.post("/processa_registro")
+def processa_registro(
+  senha: Annotated[str, Form()],
+  data_hora: Annotated[datetime, Form()],
+  peso: Annotated[int, Form()],
+  modo: Annotated[str, Form()]
+):
+  # verifica a senha
+  usuario = db_sync.verifica_senha(senha)
+  if usuario.id == 0:
+     return HTMLResponse(index_template.render(erro={
+      "principal": "Erro na autenticação.",
+      "excecao": "Senha incorreta ou inexistente, BURRO!"
+    }))
+  
+  registro = db_sync.insere_registro(data_hora, peso, usuario)
+
+  return HTMLResponse(index_template.render(sucesso={
+    "header": "Registro inserido com sucesso.",
+    "msg": f"DH: {registro.data_hora}, PESO: {registro.peso}g"
+  }))
 
 @app.post("/calculo")
 def calculos(

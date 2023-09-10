@@ -1,0 +1,4 @@
+fastapi[all]
+pandas
+jinja2
+openpyxl

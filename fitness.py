@@ -40,7 +40,7 @@ def trata_erro_validacao(request, exc):
 def index():
   return HTMLResponse(index_template.render())
 
-@app.post("/processa_registro")
+@app.post("/")
 def processa_registro(
   senha: Annotated[str, Form()],
   data_hora: Annotated[datetime, Form()],
@@ -55,12 +55,54 @@ def processa_registro(
       "excecao": "Senha incorreta ou inexistente, BURRO!"
     }))
   
-  registro = db_sync.insere_registro(data_hora, peso, usuario)
+  # se clicou em um dos botões de salvar registro, salva o registro
+  if modo in ["Salva", "Salva e mostra"]:
+    registro = db_sync.insere_registro(data_hora, peso, usuario)
+  
+  # se clicou no Salva registro apenas, salva e já retorna
+  if modo == "Salva":
+    return HTMLResponse(
+      index_template.render(
+        sucesso={
+          "header": "Registro inserido com sucesso.",
+          "msg": f"DH: {registro.data_hora}, PESO: {registro.peso}g"
+        }
+      )
+    )
+  
+  # se foi no Salva e mostra ou só no mostra, continua o processamento
+  # ambas opções precisa fazer o cálculo
+  mostra = dict()
+  df = db_sync.faz_calculos(usuario)
 
-  return HTMLResponse(index_template.render(sucesso={
-    "header": "Registro inserido com sucesso.",
-    "msg": f"DH: {registro.data_hora}, PESO: {registro.peso}g"
-  }))
+  mostra["AVG_ATUAL"] = 0
+  mostra["AVG_EM_ANDAMENTO"] = 0
+  
+  if len(df) == 3:
+    if df.loc[0, "QTDE_DIAS"] == 7:
+      mostra["AVG_EM_ANDAMENTO"] = -1
+      mostra["AVG_ATUAL"] = df.loc[0, "WEEKLY_FATLOSS_AVG"]
+    else:
+      mostra["AVG_EM_ANDAMENTO"] = df.loc[0, "WEEKLY_FATLOSS_AVG"]
+      if df.loc[1,"WEEKLY_FATLOSS_AVG"] > 0:
+        mostra["AVG_ATUAL"] = df.loc[1,"WEEKLY_FATLOSS_AVG"]
+    
+  if modo == "Salva e mostra":
+    return HTMLResponse(
+      index_template.render(
+        sucesso={
+          "header": "Registro inserido com sucesso.",
+          "msg": f"DH: {registro.data_hora}, PESO: {registro.peso}g"
+        },
+        mostra=mostra
+      )
+    )
+  
+  return HTMLResponse(index_template.render(mostra=mostra))
+  
+     
+  
+
 
 @app.post("/calculo")
 def calculos(

@@ -13,8 +13,8 @@
 
 </head>
 <body>
-  <section class="flex items-center justify-center min-h-screen min-w-screen bg-gray-500">
-    <div class="flex-col space-y-2">
+  <section class="flex items-center justify-center min-h-screen w-screen bg-gray-500">
+    <div class="flex-col space-y-2 w-full md:w-96 p-4">
       
       {% if erro %}
         <div class="bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md" role="alert">
@@ -22,7 +22,7 @@
             <div class="py-1"><svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>     
             <div>
               <p class="font-bold">{{ erro['principal'] }}</p>
-              <p class="text-sm">{{ erro['excecao'] }}</p>
+              <p class="text-sm font-bold">{{ erro['excecao'] }}</p>
             </div>
           </div>
         </div>
@@ -34,22 +34,59 @@
             <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
             <div>
               <p class="font-bold">{{ sucesso['header'] }}</p>
-              <p class="text-sm">{{ sucesso['msg'] }}</p>
+              <p class="text-sm font-bold">{{ sucesso['msg'] }}</p>
             </div>
           </div>
+        </div>
+      {% endif %}
+
+      {% if mostra %}
+        <div class="relative flex-col justify-between items-center p-4 bg-gray-200 shadow-md rounded">
+        
+          <!-- <div class="flex flex-1 items-center justify-around text-2xxl font-extrabold mb-4">                  
+              
+          </div> -->
+          <div class="flex flex-col items-center justify-center border-gray-500 space-y-4">
+            <div class="flex flex-col items-center justify-center border border-slate-500 rounded p-2 w-full">
+              <h1 class="font-extrabold text-xl mb-4">Taxa emagrecimento atual</h1>
+              {% if mostra['AVG_ATUAL'] == 0 %}
+                <p class="font-extrabold text-md text-red-500">Sem dados suficientes para o cálculo.</p>
+              {% elif mostra['AVG_ATUAL'] < 500 %}
+                <p class="font-extrabold text-xl text-red-500 mb-4"> {{ mostra['AVG_ATUAL'] }}g / semana</p>
+                <p class="text-sm font-bold italic">**Taxa abaixo do esperado reduza {{ 500 - mostra['AVG_ATUAL'] }}kcal</p>
+              {% elif mostra['AVG_ATUAL'] > 750 %}
+                <p class="font-extrabold text-xl text-purple-500 mb-4"> {{ mostra['AVG_ATUAL'] }}g / semana</p>
+                <p class="text-sm font-bold italic">**Taxa acima do esperado, aumente {{ mostra['AVG_ATUAL'] - 750 }}kcal</p>
+              {% else %}
+                <p class="font-extrabold text-xl text-blue-500 mb-4"> {{ mostra['AVG_ATUAL'] }}g / semana</p>
+                <p class="text-sm font-bold italic">**Taxa correta de emagracimento!! Show!</p>
+              {% endif %}
+            </div>
+            <div class="flex flex-col items-center justify-center border border-slate-500 rounded p-2 w-full">
+              <h1 class="font-extrabold text-xl mb-4">Taxa em andamento</h1>  
+              {% if mostra['AVG_EM_ANDAMENTO'] == -1 %}
+                <p class="font-extrabold text-md text-red-500">Semana ainda não iniciada.</p>
+              {% elif mostra['AVG_EM_ANDAMENTO'] == 0 %}
+                <p class="font-extrabold text-md text-red-500">Sem dados suficientes para o cálculo.</p>
+              {% else %}
+                <p class="font-extrabold text-xl">{{ mostra['AVG_EM_ANDAMENTO'] }}g / semana</p>
+              {% endif %}
+            </div>  
+          </div>  
+
         </div>
       {% endif %}
 
 
       <div class="relative flex-col justify-between p-4 bg-gray-200 shadow-md rounded">
       
-        <div class="flex flex-1 items-center justify-around text-3xl font-extrabold text-azul mb-4">                  
-            <h2>Cadastrar peso</h2>
+        <div class="flex flex-1 items-center justify-around text-2xl font-extrabold mb-4">                  
+            <h1>Cadastrar peso</h1>
         </div>
         
         <form 
           id="form_registro" 
-          action="/processa_registro" 
+          action="" 
           method="POST"
           class="flex flex-col justify-center" 
         >
@@ -109,11 +146,25 @@
               disabled="true"
               value="Salva e mostra"
             />
+            <input
+              type="submit"
+              name="modo"
+              id="botao_so_mostra"
+              class="
+                px-4 py-1.5 mt-4 rounded-md shadow-lg bg-gray-500 font-medium text-white block 
+                hover:enabled:opacity-80 hover:enabled:text-white transition duration-300
+                disabled:opacity-50
+              "
+              disabled="true"
+              value="Só Mostra"
+            />
         </form>    
       </div>  
     </div>  
   </section>
+
   <script>
+
     flatpickr("#date", {
       defaultDate: Date.now(),
       enableTime: true,
@@ -124,7 +175,9 @@
     const btn_salva = document.querySelector("#botao_salva");
     btn_salva.disabled = true;    
     const btn_salva_mostra = document.querySelector("#botao_salva_mostra");
-    btn_salva_mostra.disabled = true;    
+    btn_salva_mostra.disabled = true;
+    const btn_so_mostra = document.querySelector("#botao_so_mostra");
+    btn_so_mostra.disabled = true;
     const date = document.querySelector("#date");
     const peso = document.querySelector("#peso");
     const senha = document.querySelector("#senha");
@@ -137,11 +190,19 @@
         btn_salva.disabled = true;
         btn_salva_mostra.disabled = true;
       }
+
+      if (senha.value.length === 8) {
+        btn_so_mostra.disabled = false;
+      } else {
+        btn_so_mostra.disabled = true;
+      }
+
     }
 
     date.addEventListener("input", habilita_submit);
     peso.addEventListener("input", habilita_submit);
     senha.addEventListener("input", habilita_submit);
+
   </script>
 </body>
 </html>

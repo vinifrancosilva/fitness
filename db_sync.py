@@ -64,8 +64,8 @@ def insere_registro(data_hora, peso, usuario) -> Registro:
     peso=row[3],
   )
 
-def faz_calculos(df: pd.DataFrame) -> pd.DataFrame:
-  df_calculo = pd.read_sql_query(sql.CALCULO, conn)
+def faz_calculos(usuario: Usuario) -> pd.DataFrame:
+  df_calculo = pd.read_sql_query(sql.CALCULO, conn, params=(usuario.id,))
 
   return df_calculo
 
